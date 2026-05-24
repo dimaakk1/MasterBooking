@@ -1,4 +1,9 @@
 
+using MasterBooking.DAL.DbContext;
+using MasterBooking.DAL.Entities;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+
 namespace MasterBooking.API
 {
     public class Program
@@ -8,6 +13,24 @@ namespace MasterBooking.API
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
+            builder.Services.AddDbContext<AppDbContext>(options =>
+                options.UseNpgsql(
+                    builder.Configuration.GetConnectionString("DefaultConnection")
+                    )
+                );
+
+            builder.Services
+            .AddIdentity<ApplicationUser, IdentityRole>(options =>
+                {
+                    options.Password.RequireDigit = false;
+                    options.Password.RequireUppercase = false;
+                    options.Password.RequireNonAlphanumeric = false;
+                    options.Password.RequiredLength = 6;
+                 })
+            .AddEntityFrameworkStores<AppDbContext>()
+            .AddDefaultTokenProviders();
+            builder.Services.AddAuthentication();
+            builder.Services.AddAuthorization();
 
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -25,6 +48,7 @@ namespace MasterBooking.API
 
             app.UseHttpsRedirection();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
 
