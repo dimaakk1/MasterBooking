@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\MasterBooking.DAL\MasterBooking.DAL.csproj" />
+  </ItemGroup>
+
 </Project>
