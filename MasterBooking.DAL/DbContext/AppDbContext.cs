@@ -16,6 +16,7 @@ namespace MasterBooking.DAL.DbContext
         public DbSet<Review> Reviews { get; set; }
         public DbSet<Availability> Availabilities { get; set; }
         public DbSet<BlockedSlot> BlockedSlots { get; set; }
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
 
         public AppDbContext(DbContextOptions<AppDbContext> options)
             : base(options)

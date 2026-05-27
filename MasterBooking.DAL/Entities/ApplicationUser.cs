@@ -13,5 +13,6 @@ namespace MasterBooking.DAL.Entities
 
         public ICollection<Appointment> ClientAppointments { get; set; } = new List<Appointment>();
         public ICollection<Appointment> MasterAppointments { get; set; } = new List<Appointment>();
+        public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
     }
 }

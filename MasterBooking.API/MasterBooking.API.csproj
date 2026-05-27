@@ -15,10 +15,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\MasterBooking.BLL\MasterBooking.BLL.csproj" />
     <ProjectReference Include="..\MasterBooking.DAL\MasterBooking.DAL.csproj" />
   </ItemGroup>
