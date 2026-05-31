@@ -25,5 +25,18 @@ namespace MasterBooking.DAL.Repositories.Availabilitys
                 .Where(a => a.MasterId == masterId)
                 .ToListAsync();
         }
+
+        public async Task<bool> IsMasterAvailableAsync(string masterId, DateTime start, DateTime end)
+        {
+            var day = start.DayOfWeek;
+            var startTime = start.TimeOfDay;
+            var endTime = end.TimeOfDay;
+
+            return await _context.Availabilities.AnyAsync(a =>
+                a.MasterId == masterId &&
+                a.DayOfWeek == day &&
+                a.StartTime <= startTime &&
+                a.EndTime >= endTime);
+        }
     }
 }
