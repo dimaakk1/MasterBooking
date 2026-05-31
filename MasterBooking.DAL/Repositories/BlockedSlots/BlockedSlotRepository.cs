@@ -25,5 +25,13 @@ namespace MasterBooking.DAL.Repositories.BlockedSlots
                 .Where(b => b.MasterId == masterId)
                 .ToListAsync();
         }
+
+        public async Task<bool> HasConflictAsync(string masterId, DateTime start, DateTime end)
+        {
+            return await _context.BlockedSlots.AnyAsync(b =>
+                b.MasterId == masterId &&
+                start < b.EndTime &&
+                end > b.StartTime);
+        }
     }
 }

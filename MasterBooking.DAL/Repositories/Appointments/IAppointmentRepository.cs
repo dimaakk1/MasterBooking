@@ -13,6 +13,6 @@ namespace MasterBooking.DAL.Repositories.Appointments
         Task<List<Appointment>> GetByClientIdAsync(string clientId);
         Task<List<Appointment>> GetByMasterIdAsync(string masterId);
 
-        Task<bool> IsTimeSlotTakenAsync(string masterId, DateTime start, DateTime end);
+        Task<bool> HasConflictAsync(string masterId, DateTime start, DateTime end);
     }
 }

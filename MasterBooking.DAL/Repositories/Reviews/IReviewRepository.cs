@@ -11,6 +11,7 @@ namespace MasterBooking.DAL.Repositories.Reviews
     public interface IReviewRepository : IGenericRepository<Review>
     {
         Task<List<Review>> GetByMasterIdAsync(string masterId);
-        Task<double> GetAverageRatingAsync(string masterId);
+        Task<bool> HasReviewForAppointmentAsync(int appointmentId);
+
     }
 }

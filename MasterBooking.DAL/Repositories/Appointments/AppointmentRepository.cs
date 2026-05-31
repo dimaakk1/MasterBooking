@@ -33,13 +33,14 @@ namespace MasterBooking.DAL.Repositories.Appointments
                 .ToListAsync();
         }
 
-        public async Task<bool> IsTimeSlotTakenAsync(string masterId, DateTime start, DateTime end)
+        public async Task<bool> HasConflictAsync(string masterId, DateTime start, DateTime end)
         {
-            return await _context.Appointments.AnyAsync(a =>
-                a.MasterId == masterId &&
-                a.StartTime < end &&
-                a.EndTime > start
-            );
+            return await _context.Appointments
+                .AnyAsync(x =>
+                    x.MasterId == masterId &&
+                    start < x.EndTime &&
+                    end > x.StartTime &&
+                    x.Status != "Cancelled");
         }
     }
 }

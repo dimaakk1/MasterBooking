@@ -26,12 +26,10 @@ namespace MasterBooking.DAL.Repositories.Reviews
                 .ToListAsync();
         }
 
-        public async Task<double> GetAverageRatingAsync(string masterId)
+        public async Task<bool> HasReviewForAppointmentAsync(int appointmentId)
         {
             return await _context.Reviews
-                .Where(r => r.MasterId == masterId)
-                .Select(r => (double?)r.Rating)
-                .AverageAsync() ?? 0;
+                .AnyAsync(x => x.AppointmentId == appointmentId);
         }
     }
 }

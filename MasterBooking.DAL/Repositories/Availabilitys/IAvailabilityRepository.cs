@@ -11,5 +11,7 @@ namespace MasterBooking.DAL.Repositories.Availabilitys
     public interface IAvailabilityRepository : IGenericRepository<Availability>
     {
         Task<List<Availability>> GetByMasterIdAsync(string masterId);
+        Task<bool> IsMasterAvailableAsync(string masterId, DateTime start, DateTime end);
+
     }
 }

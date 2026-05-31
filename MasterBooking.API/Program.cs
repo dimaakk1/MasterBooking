@@ -1,6 +1,11 @@
 
+using MasterBooking.BLL.Automapper;
 using MasterBooking.BLL.DTO.Auth;
 using MasterBooking.BLL.Services.Auth;
+using MasterBooking.BLL.Services.AvailabilityService;
+using MasterBooking.BLL.Services.BlockedSlotService;
+using MasterBooking.BLL.Services.ReviewService;
+using MasterBooking.BLL.Services.AppointmentService;
 using MasterBooking.DAL.DbContext;
 using MasterBooking.DAL.Entities;
 using MasterBooking.DAL.Repositories.Appointments;
@@ -9,11 +14,13 @@ using MasterBooking.DAL.Repositories.BlockedSlots;
 using MasterBooking.DAL.Repositories.Generic;
 using MasterBooking.DAL.Repositories.Reviews;
 using MasterBooking.DAL.Repositories.Services;
+using MasterBooking.DAL.UOW;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using MasterBooking.BLL.Services.ServiceService;
 
 namespace MasterBooking.API
 {
@@ -38,7 +45,17 @@ namespace MasterBooking.API
             builder.Services.AddScoped<IBlockedSlotRepository, BlockedSlotRepository>();
             builder.Services.AddScoped<IAppointmentRepository, AppointmentRepository>();
             builder.Services.AddScoped<IAvailabilityRepository, AvailabilityRepository>();
+            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+            builder.Services.AddScoped<IAvailabilityService, AvailabilityService>();
+            builder.Services.AddScoped<IReviewService, ReviewService>();
+            builder.Services.AddScoped<IBlockedSlotService, BlockedSlotService>();
+            builder.Services.AddScoped<IAppointmentService, AppointmentService>();
+            builder.Services.AddScoped<IServiceService, ServiceService>();
 
+            builder.Services.AddAutoMapper(cfg =>
+            {
+                cfg.AddProfile<MappingProfile>();
+            });
 
             builder.Services.Configure<JwtSettings>(
             builder.Configuration.GetSection("Jwt"));
