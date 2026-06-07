@@ -8,8 +8,6 @@ namespace MasterBooking.BLL.DTO.BlockedSlotsDto
 {
     public class CreateBlockedSlotDto
     {
-        public string MasterId { get; set; } = null!;
-
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
 

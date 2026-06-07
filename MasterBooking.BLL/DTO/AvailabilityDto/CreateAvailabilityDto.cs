@@ -8,7 +8,6 @@ namespace MasterBooking.BLL.DTO.AvailabilityDto
 {
     public class CreateAvailabilityDto
     {
-        public string MasterId { get; set; } = null!;
 
         public DayOfWeek DayOfWeek { get; set; }
 

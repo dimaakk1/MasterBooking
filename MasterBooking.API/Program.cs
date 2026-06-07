@@ -1,11 +1,13 @@
 
 using MasterBooking.BLL.Automapper;
 using MasterBooking.BLL.DTO.Auth;
+using MasterBooking.BLL.Services.AppointmentService;
 using MasterBooking.BLL.Services.Auth;
 using MasterBooking.BLL.Services.AvailabilityService;
 using MasterBooking.BLL.Services.BlockedSlotService;
 using MasterBooking.BLL.Services.ReviewService;
-using MasterBooking.BLL.Services.AppointmentService;
+using MasterBooking.BLL.Services.ServiceService;
+using MasterBooking.BLL.Services.UserService;
 using MasterBooking.DAL.DbContext;
 using MasterBooking.DAL.Entities;
 using MasterBooking.DAL.Repositories.Appointments;
@@ -19,8 +21,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using System.Security.Claims;
 using System.Text;
-using MasterBooking.BLL.Services.ServiceService;
 
 namespace MasterBooking.API
 {
@@ -30,27 +33,30 @@ namespace MasterBooking.API
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
             builder.Services.AddDbContext<AppDbContext>(options =>
-                options.UseNpgsql(
-                    builder.Configuration.GetConnectionString("DefaultConnection")
-                    )
-                );
+                options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-            builder.Services.AddScoped<ITokenService, TokenService>();
-            builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<IServiceRepository, ServiceRepository>();
             builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
-            builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
             builder.Services.AddScoped<IBlockedSlotRepository, BlockedSlotRepository>();
             builder.Services.AddScoped<IAppointmentRepository, AppointmentRepository>();
             builder.Services.AddScoped<IAvailabilityRepository, AvailabilityRepository>();
+            builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-            builder.Services.AddScoped<IAvailabilityService, AvailabilityService>();
+            
+
+            builder.Services.AddScoped<IAuthService, AuthService>();
+            builder.Services.AddScoped<ITokenService, TokenService>();
+
+            builder.Services.AddScoped<IServiceService, ServiceService>();
             builder.Services.AddScoped<IReviewService, ReviewService>();
             builder.Services.AddScoped<IBlockedSlotService, BlockedSlotService>();
             builder.Services.AddScoped<IAppointmentService, AppointmentService>();
-            builder.Services.AddScoped<IServiceService, ServiceService>();
+            builder.Services.AddScoped<IAvailabilityService, AvailabilityService>();
+
+            builder.Services.AddHttpContextAccessor();
+            builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 
             builder.Services.AddAutoMapper(cfg =>
             {
@@ -58,61 +64,88 @@ namespace MasterBooking.API
             });
 
             builder.Services.Configure<JwtSettings>(
-            builder.Configuration.GetSection("Jwt"));
+                builder.Configuration.GetSection("Jwt"));
 
             var jwtSettings = builder.Configuration
                 .GetSection("Jwt")
                 .Get<JwtSettings>();
 
             builder.Services
-                .AddAuthentication(options =>
-                {
-                    options.DefaultAuthenticateScheme =
-                        JwtBearerDefaults.AuthenticationScheme;
-
-                    options.DefaultChallengeScheme =
-                        JwtBearerDefaults.AuthenticationScheme;
-                })
-                .AddJwtBearer(options =>
-                {
-                    options.TokenValidationParameters =
-                        new TokenValidationParameters
-                        {
-                            ValidateIssuer = true,
-                            ValidateAudience = true,
-                            ValidateLifetime = true,
-                            ValidateIssuerSigningKey = true,
-
-                            ValidIssuer = jwtSettings!.Issuer,
-
-                            ValidAudience = jwtSettings.Audience,
-
-                            IssuerSigningKey =
-                                new SymmetricSecurityKey(
-                                    Encoding.UTF8.GetBytes(jwtSettings.Key))
-                        };
-                });
-
-
-            builder.Services
-            .AddIdentity<ApplicationUser, IdentityRole>(options =>
+                .AddIdentity<ApplicationUser, IdentityRole>(options =>
                 {
                     options.Password.RequireDigit = false;
                     options.Password.RequireUppercase = false;
                     options.Password.RequireNonAlphanumeric = false;
                     options.Password.RequiredLength = 6;
-                 })
-            .AddEntityFrameworkStores<AppDbContext>()
-            .AddDefaultTokenProviders();
+                })
+                .AddEntityFrameworkStores<AppDbContext>()
+                .AddDefaultTokenProviders();
+
+            builder.Services
+                .AddAuthentication(options =>
+                {
+                    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+                })
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+
+                        ValidIssuer = jwtSettings!.Issuer,
+                        ValidAudience = jwtSettings.Audience,
+                        IssuerSigningKey = new SymmetricSecurityKey(
+                            Encoding.UTF8.GetBytes(jwtSettings.Key)),
+
+                        RoleClaimType = ClaimTypes.Role,
+                        NameClaimType = ClaimTypes.NameIdentifier
+                    };
+                });
+
+            builder.Services.AddAuthorization();
 
             builder.Services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+
+            builder.Services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo
+                {
+                    Title = "MasterBooking API",
+                    Version = "v1"
+                });
+
+                var securityScheme = new OpenApiSecurityScheme
+                {
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "bearer",
+                    BearerFormat = "JWT",
+                    In = ParameterLocation.Header,
+                    Description = "Enter: Bearer {your token}",
+
+                    Reference = new OpenApiReference
+                    {
+                        Type = ReferenceType.SecurityScheme,
+                        Id = JwtBearerDefaults.AuthenticationScheme
+                    }
+                };
+
+                c.AddSecurityDefinition(securityScheme.Reference.Id, securityScheme);
+
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    { securityScheme, Array.Empty<string>() }
+                });
+            });
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
@@ -121,17 +154,16 @@ namespace MasterBooking.API
 
             app.UseHttpsRedirection();
 
-            app.UseAuthentication();
+            app.UseAuthentication(); 
             app.UseAuthorization();
+
+            app.MapControllers();
 
             using (var scope = app.Services.CreateScope())
             {
                 var services = scope.ServiceProvider;
-
                 await RoleSeeder.SeedRolesAsync(services);
             }
-
-            app.MapControllers();
 
             app.Run();
         }

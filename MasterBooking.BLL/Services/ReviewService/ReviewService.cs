@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using MasterBooking.BLL.DTO.ReviewsDto;
+using MasterBooking.BLL.Services.UserService;
 using MasterBooking.DAL.Entities;
 using MasterBooking.DAL.UOW;
 using System;
@@ -14,11 +15,13 @@ namespace MasterBooking.BLL.Services.ReviewService
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly ICurrentUserService _currentUser;
 
-        public ReviewService(IUnitOfWork unitOfWork, IMapper mapper)
+        public ReviewService(IUnitOfWork unitOfWork, IMapper mapper, ICurrentUserService currentUser)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _currentUser = currentUser;
         }
 
         public async Task<ReviewDto> CreateAsync(CreateReviewDto dto)
@@ -37,9 +40,11 @@ namespace MasterBooking.BLL.Services.ReviewService
             if (alreadyReviewed)
                 throw new Exception("Review already exists");
 
+            var clientId = _currentUser.UserId;
+
             var review = new Review
             {
-                ClientId = dto.ClientId,
+                ClientId = clientId,
                 MasterId = appointment.MasterId,
                 AppointmentId = dto.AppointmentId,
                 Rating = dto.Rating,

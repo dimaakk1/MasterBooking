@@ -13,12 +13,12 @@ namespace MasterBooking.BLL.Services.ServiceService
 
         Task<IEnumerable<ServiceDto>> GetAllAsync();
 
-        Task<ServiceDto?> GetByIdAsync(Guid id);
+        Task<ServiceDto?> GetByIdAsync(int id);
 
         Task<IEnumerable<ServiceDto>> GetByMasterIdAsync(string masterId);
 
-        Task UpdateAsync(Guid id, UpdateServiceDto dto);
+        Task UpdateAsync(int id, UpdateServiceDto dto);
 
-        Task DeleteAsync(Guid id);
+        Task DeleteAsync(int id);
     }
 }

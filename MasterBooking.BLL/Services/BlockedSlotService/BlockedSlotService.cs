@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using MasterBooking.BLL.DTO.BlockedSlotsDto;
+using MasterBooking.BLL.Services.UserService;
 using MasterBooking.DAL.Entities;
 using MasterBooking.DAL.UOW;
 using System;
@@ -14,11 +15,12 @@ namespace MasterBooking.BLL.Services.BlockedSlotService
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-
-        public BlockedSlotService(IUnitOfWork unitOfWork, IMapper mapper)
+        private readonly ICurrentUserService _currentUser;
+        public BlockedSlotService(IUnitOfWork unitOfWork, IMapper mapper, ICurrentUserService currentUser)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _currentUser = currentUser;
         }
 
         public async Task<BlockedSlotDto> CreateAsync(CreateBlockedSlotDto dto)
@@ -26,17 +28,17 @@ namespace MasterBooking.BLL.Services.BlockedSlotService
             // 1. validation
             if (dto.StartTime >= dto.EndTime)
                 throw new Exception("Invalid time range");
-
+            var masterId = _currentUser.UserId; //  з JWT
             // 2. conflict with existing blocked slots (SQL)
             var hasBlockedConflict = await _unitOfWork.BlockedSlots
-                .HasConflictAsync(dto.MasterId, dto.StartTime, dto.EndTime);
+                .IsBlockedAsync(masterId, dto.StartTime, dto.EndTime);
 
             if (hasBlockedConflict)
                 throw new Exception("Blocked slot overlaps existing one");
 
             // 3. conflict with appointments (SQL)
             var hasAppointmentConflict = await _unitOfWork.Appointments
-                .HasConflictAsync(dto.MasterId, dto.StartTime, dto.EndTime);
+                .HasConflictAsync(masterId, dto.StartTime, dto.EndTime);
 
             if (hasAppointmentConflict)
                 throw new Exception("Cannot block time with existing appointments");
