@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using MasterBooking.BLL.DTO.AvailabilityDto;
+using MasterBooking.BLL.Services.UserService;
 using MasterBooking.DAL.Entities;
 using MasterBooking.DAL.UOW;
 using System;
@@ -14,16 +15,25 @@ namespace MasterBooking.BLL.Services.AvailabilityService
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-
-        public AvailabilityService(IUnitOfWork unitOfWork, IMapper mapper)
+        private readonly ICurrentUserService _currentUser;  
+        public AvailabilityService(IUnitOfWork unitOfWork, IMapper mapper, ICurrentUserService currentUser)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _currentUser = currentUser;
         }
 
         public async Task<AvailabilityDto> CreateAsync(CreateAvailabilityDto dto)
         {
-            var availability = _mapper.Map<Availability>(dto);
+            var masterId = _currentUser.UserId;
+
+            var availability = new Availability
+            {
+                MasterId = masterId,
+                DayOfWeek = dto.DayOfWeek,
+                StartTime = dto.StartTime,
+                EndTime = dto.EndTime
+            };
 
             await _unitOfWork.Availabilities.AddAsync(availability);
             await _unitOfWork.SaveChangesAsync();
@@ -41,7 +51,7 @@ namespace MasterBooking.BLL.Services.AvailabilityService
             return _mapper.Map<IEnumerable<AvailabilityDto>>(filtered);
         }
 
-        public async Task DeleteAsync(Guid id)
+        public async Task DeleteAsync(int id)
         {
             var availability = await _unitOfWork.Availabilities.GetByIdAsync(id);
 

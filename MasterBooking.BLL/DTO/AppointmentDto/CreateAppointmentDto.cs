@@ -8,7 +8,6 @@ namespace MasterBooking.BLL.DTO.AppointmentDto
 {
     public class CreateAppointmentDto
     {
-        public string ClientId { get; set; } = null!;
         public int ServiceId { get; set; }
 
         public DateTime StartTime { get; set; }

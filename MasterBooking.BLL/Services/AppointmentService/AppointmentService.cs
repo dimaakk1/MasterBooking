@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using MasterBooking.BLL.DTO.AppointmentDto;
+using MasterBooking.BLL.Services.UserService;
 using MasterBooking.DAL.Entities;
 using MasterBooking.DAL.UOW;
 using System;
@@ -14,11 +15,12 @@ namespace MasterBooking.BLL.Services.AppointmentService
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-
-        public AppointmentService(IUnitOfWork unitOfWork, IMapper mapper)
+        private readonly ICurrentUserService _currentUser;
+        public AppointmentService(IUnitOfWork unitOfWork, IMapper mapper, ICurrentUserService currentUser)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _currentUser = currentUser;
         }
 
         public async Task<AppointmentDto> CreateAsync(CreateAppointmentDto dto)
@@ -48,10 +50,10 @@ namespace MasterBooking.BLL.Services.AppointmentService
 
             if (hasConflict)
                 throw new Exception("Already booked");
-
+            var clientId = _currentUser.UserId; 
             var appointment = new Appointment
             {
-                ClientId = dto.ClientId,
+                ClientId = clientId,
                 MasterId = service.MasterId,
                 ServiceId = dto.ServiceId,
                 StartTime = start,

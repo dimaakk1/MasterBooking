@@ -11,7 +11,7 @@ namespace MasterBooking.DAL.Repositories.BlockedSlots
     public interface IBlockedSlotRepository : IGenericRepository<BlockedSlot>
     {
         Task<List<BlockedSlot>> GetByMasterIdAsync(string masterId);
-        Task<bool> HasConflictAsync(string masterId, DateTime start, DateTime end);
+        Task<bool> IsBlockedAsync(string masterId, DateTime start, DateTime end);
 
     }
 }

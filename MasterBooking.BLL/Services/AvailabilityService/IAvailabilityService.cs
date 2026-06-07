@@ -13,6 +13,6 @@ namespace MasterBooking.BLL.Services.AvailabilityService
 
         Task<IEnumerable<AvailabilityDto>> GetByMasterIdAsync(string masterId);
 
-        Task DeleteAsync(Guid id);
+        Task DeleteAsync(int id);
     }
 }

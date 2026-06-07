@@ -16,6 +16,5 @@ namespace MasterBooking.BLL.DTO.ServicesDto
 
         public int DurationMinutes { get; set; }
 
-        public string MasterId { get; set; } = null!;
     }
 }

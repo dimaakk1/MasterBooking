@@ -8,7 +8,6 @@ namespace MasterBooking.BLL.DTO.ReviewsDto
 {
     public class CreateReviewDto
     {
-        public string ClientId { get; set; } = null!;
         public int AppointmentId { get; set; }
 
         public int Rating { get; set; }
